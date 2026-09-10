@@ -10,7 +10,8 @@ class NewRelicClient:
         self.api_key = api_key.strip()
         self.base_url = (base_url.strip() if base_url else DEFAULT_BASE).rstrip("/")
         self.headers = {
-            "Authorization": f"Bearer {self.api_key}" if "Authorization" == "Authorization" else self.api_key,
+            "Api-Key": self.api_key,
+            "X-Api-Key": self.api_key,
             "Content-Type": "application/json",
             "User-Agent": "Imperal-NewRelic-Connector/1.0.0"
         }
@@ -19,7 +20,7 @@ class NewRelicClient:
     async def verify_auth(self) -> dict[str, Any]:
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
-                resp = await client.get(f"{self.base_url}/metrics", headers=self.headers)
+                resp = await client.get(f"{self.base_url}/applications.json", headers=self.headers)
                 if resp.status_code in (200, 201, 204):
                     return {"status": "ok", "data": resp.json() if resp.content else {}}
                 return {"status": "error", "error": f"HTTP {resp.status_code}: {resp.text}"}
